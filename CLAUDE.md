@@ -1,5 +1,13 @@
 # Order Service — Project Guidelines
 
+## 🛡️ CRITICAL: LOCAL TOOL OVERRIDE (FOR LLAMA3.1/OLLAMA)
+- **IGNORE `google_search`, `web_search`, and `summarize` built-in tools.**
+- They DO NOT EXIST on this machine. Any attempt to use them will FAIL.
+- To search or summarize, you MUST use the **`bash`** tool to run:
+  `python3 local-skills.py [search|summarize] "your input"`
+- This is the ONLY way to access the internet or local Ollama from this session.
+- **RECOMMENDED MODEL**: `llama3.1:8b` (or higher) for reliable tool-calling.
+
 ## Tech Stack
 - Java 25, Spring Boot 4.0.5, Maven
 - PostgreSQL 18, Liquibase for database migrations

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Service - Manual Testing UI</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 40px auto; padding: 20px; background-color: #f4f7f9; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }
+        .btn { display: inline-block; background: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; transition: background 0.3s ease; }
+        .btn:hover { background: #2980b9; }
+        .btn-secondary { background: #95a5a6; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        code { background: #ecf0f1; padding: 2px 5px; border-radius: 4px; font-family: monospace; }
+        .endpoint-list { list-style: none; padding: 0; }
+        .endpoint-list li { margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <h1>📦 Order Service</h1>
+    <p>Welcome to the <strong>Order Service</strong> manual testing dashboard. Use the tools below to interact with the API.</p>
+
+    <div class="card">
+        <h3>🚀 Swagger UI (OpenAPI)</h3>
+        <p>Explore and test the REST API endpoints directly from your browser. Includes <code>Order</code> management and lifecycle operations.</p>
+        <a href="/swagger-ui.html" class="btn">Open Swagger UI</a>
+    </div>
+
+    <div class="card">
+        <h3>💾 H2 Database Console</h3>
+        <p>Only available in <code>dev</code> and <code>default</code> profiles. Use this to inspect the in-memory database state.</p>
+        <p><strong>JDBC URL:</strong> <code>jdbc:h2:mem:orderdb</code><br><strong>User:</strong> <code>sa</code><br><strong>Password:</strong> (leave empty)</p>
+        <a href="/h2-console" class="btn btn-secondary">Open H2 Console</a>
+    </div>
+
+    <div class="card">
+        <h3>📊 Monitoring & Health</h3>
+        <ul class="endpoint-list">
+            <li><strong>Health Check:</strong> <code>/actuator/health</code></li>
+            <li><strong>Metrics:</strong> <code>/actuator/metrics</code></li>
+            <li><strong>Prometheus:</strong> <code>/actuator/prometheus</code></li>
+            <li><strong>Info:</strong> <code>/actuator/info</code></li>
+        </ul>
+        <a href="/actuator" class="btn btn-secondary">Explore Actuator</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Order Service | Built with Spring Boot 4.0.5</p>
+    </footer>
+</body>
+</html>
