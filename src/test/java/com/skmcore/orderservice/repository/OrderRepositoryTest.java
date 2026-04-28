@@ -21,7 +21,9 @@ class OrderRepositoryTest {
     @Test
     void saveAndFind_ShouldReturnOrder() {
         Order order = Order.builder()
-            .customerName("Jane Doe")
+            .orderNumber("ORD-TEST-001")
+            .customerId("customer-123")
+            .currency("USD")
             .totalAmount(new BigDecimal("120.00"))
             .status(Order.OrderStatus.PENDING)
             .build();
@@ -30,13 +32,17 @@ class OrderRepositoryTest {
         Optional<Order> found = orderRepository.findById(savedOrder.getId());
 
         assertThat(found).isPresent();
-        assertThat(found.get().getCustomerName()).isEqualTo("Jane Doe");
+        assertThat(found.get().getCustomerId()).isEqualTo("customer-123");
+        assertThat(found.get().getCurrency()).isEqualTo("USD");
+        assertThat(found.get().getOrderNumber()).isEqualTo("ORD-TEST-001");
     }
 
     @Test
     void existsById_ShouldReturnTrueWhenExists() {
         Order order = Order.builder()
-            .customerName("John Smith")
+            .orderNumber("ORD-TEST-002")
+            .customerId("customer-456")
+            .currency("USD")
             .totalAmount(new BigDecimal("50.00"))
             .status(Order.OrderStatus.PENDING)
             .build();
@@ -45,5 +51,26 @@ class OrderRepositoryTest {
         boolean exists = orderRepository.existsById(savedOrder.getId());
 
         assertThat(exists).isTrue();
+    }
+
+    @Test
+    void saveOrder_WithAllFields_ShouldPersistCorrectly() {
+        Order order = Order.builder()
+            .orderNumber("ORD-TEST-003")
+            .customerId("customer-789")
+            .currency("EUR")
+            .totalAmount(new BigDecimal("250.50"))
+            .status(Order.OrderStatus.PROCESSING)
+            .build();
+        Order savedOrder = orderRepository.save(order);
+
+        Optional<Order> found = orderRepository.findById(savedOrder.getId());
+
+        assertThat(found).isPresent();
+        assertThat(found.get().getOrderNumber()).isEqualTo("ORD-TEST-003");
+        assertThat(found.get().getCustomerId()).isEqualTo("customer-789");
+        assertThat(found.get().getCurrency()).isEqualTo("EUR");
+        assertThat(found.get().getTotalAmount()).isEqualByComparingTo(new BigDecimal("250.50"));
+        assertThat(found.get().getStatus()).isEqualTo(Order.OrderStatus.PROCESSING);
     }
 }

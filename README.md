@@ -3,6 +3,9 @@
 
 A Spring Boot 4.0.5 microservice for managing orders. Built with Java 25, Maven, PostgreSQL, and modern observability features.
 
+## Java 25 Compatibility
+The project is optimized for Java 25. Note that `maven-surefire-plugin` is configured with `-XX:+EnableDynamicAgentLoading` to support Mockito/ByteBuddy on newer JDKs.
+
 ## Tech Stack
 
 - **Java**: 25
@@ -311,6 +314,7 @@ Controller Layer
 
 - **UUID**: Used for all entity primary keys
 - **BigDecimal**: Used for monetary values (never double/float)
+- **409 Conflict**: Returned via `GlobalExceptionHandler` for `IllegalStateException` (e.g., business logic violations)
 - **Constructor Injection**: Used everywhere (never field injection)
 - **Records**: Used for DTOs where possible
 - **ResponseEntity**: Returned from controllers (not raw objects)

@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
-
+    
     <!-- Console appender with structured JSON logging for production/staging -->
-    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <includeContext>true</includeContext>
             <includeMdc>true</includeMdc>
@@ -28,13 +27,13 @@
 
     <springProfile name="staging">
         <root level="INFO">
-            <appender-ref ref="JSON_CONSOLE"/>
+            <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 
     <springProfile name="prod">
         <root level="WARN">
-            <appender-ref ref="JSON_CONSOLE"/>
+            <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 

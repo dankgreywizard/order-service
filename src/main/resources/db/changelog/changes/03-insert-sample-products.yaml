@@ -1,0 +1,116 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003
+      author: developer
+      changes:
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: id, value: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" }
+              - column: { name: product_code, value: "LAPTOP-001" }
+              - column: { name: name, value: "Professional Laptop 15" }
+              - column: { name: description, value: "High-performance laptop with 16GB RAM and 512GB SSD" }
+              - column: { name: price, value: "1299.99" }
+              - column: { name: category, value: "Electronics" }
+              - column: { name: stock_quantity, value: "50" }
+              - column: { name: available, valueBoolean: true }
+              - column: { name: created_at, valueDate: "2026-01-01T00:00:00" }
+              - column: { name: updated_at, valueDate: "2026-01-01T00:00:00" }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: id, value: "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22" }
+              - column: { name: product_code, value: "MOUSE-001" }
+              - column: { name: name, value: "Wireless Mouse" }
+              - column: { name: description, value: "Ergonomic wireless mouse with long battery life" }
+              - column: { name: price, value: "49.99" }
+              - column: { name: category, value: "Electronics" }
+              - column: { name: stock_quantity, value: "200" }
+              - column: { name: available, valueBoolean: true }
+              - column: { name: created_at, valueDate: "2026-01-01T00:00:00" }
+              - column: { name: updated_at, valueDate: "2026-01-01T00:00:00" }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: id, value: "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33" }
+              - column: { name: product_code, value: "KEYBOARD-001" }
+              - column: { name: name, value: "Mechanical Keyboard" }
+              - column: { name: description, value: "RGB mechanical keyboard with Cherry MX switches" }
+              - column: { name: price, value: "149.99" }
+              - column: { name: category, value: "Electronics" }
+              - column: { name: stock_quantity, value: "75" }
+              - column: { name: available, valueBoolean: true }
+              - column: { name: created_at, valueDate: "2026-01-01T00:00:00" }
+              - column: { name: updated_at, valueDate: "2026-01-01T00:00:00" }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: id, value: "d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44" }
+              - column: { name: product_code, value: "MONITOR-001" }
+              - column: { name: name, value: "4K Ultra HD Monitor 27" }
+              - column: { name: description, value: "Professional 4K monitor with HDR support" }
+              - column: { name: price, value: "599.99" }
+              - column: { name: category, value: "Electronics" }
+              - column: { name: stock_quantity, value: "30" }
+              - column: { name: available, valueBoolean: true }
+              - column: { name: created_at, valueDate: "2026-01-01T00:00:00" }
+              - column: { name: updated_at, valueDate: "2026-01-01T00:00:00" }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: id, value: "e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55" }
+              - column: { name: product_code, value: "DESK-001" }
+              - column: { name: name, value: "Standing Desk" }
+              - column: { name: description, value: "Electric height-adjustable standing desk" }
+              - column: { name: price, value: "799.99" }
+              - column: { name: category, value: "Furniture" }
+              - column: { name: stock_quantity, value: "25" }
+              - column: { name: available, valueBoolean: true }
+              - column: { name: created_at, valueDate: "2026-01-01T00:00:00" }
+              - column: { name: updated_at, valueDate: "2026-01-01T00:00:00" }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: id, value: "f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a66" }
+              - column: { name: product_code, value: "CHAIR-001" }
+              - column: { name: name, value: "Ergonomic Office Chair" }
+              - column: { name: description, value: "Premium ergonomic chair with lumbar support" }
+              - column: { name: price, value: "449.99" }
+              - column: { name: category, value: "Furniture" }
+              - column: { name: stock_quantity, value: "40" }
+              - column: { name: available, valueBoolean: true }
+              - column: { name: created_at, valueDate: "2026-01-01T00:00:00" }
+              - column: { name: updated_at, valueDate: "2026-01-01T00:00:00" }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: id, value: "11eebc99-9c0b-4ef8-bb6d-6bb9bd380a77" }
+              - column: { name: product_code, value: "HEADSET-001" }
+              - column: { name: name, value: "Noise-Cancelling Headset" }
+              - column: { name: description, value: "Premium wireless headset with active noise cancellation" }
+              - column: { name: price, value: "299.99" }
+              - column: { name: category, value: "Electronics" }
+              - column: { name: stock_quantity, value: "100" }
+              - column: { name: available, valueBoolean: true }
+              - column: { name: created_at, valueDate: "2026-01-01T00:00:00" }
+              - column: { name: updated_at, valueDate: "2026-01-01T00:00:00" }
+
+        - insert:
+            tableName: products
+            columns:
+              - column: { name: id, value: "22eebc99-9c0b-4ef8-bb6d-6bb9bd380a88" }
+              - column: { name: product_code, value: "WEBCAM-001" }
+              - column: { name: name, value: "HD Webcam" }
+              - column: { name: description, value: "1080p HD webcam with built-in microphone" }
+              - column: { name: price, value: "89.99" }
+              - column: { name: category, value: "Electronics" }
+              - column: { name: stock_quantity, value: "150" }
+              - column: { name: available, valueBoolean: true }
+              - column: { name: created_at, valueDate: "2026-01-01T00:00:00" }
+              - column: { name: updated_at, valueDate: "2026-01-01T00:00:00" }
