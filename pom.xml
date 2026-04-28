@@ -23,8 +23,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mapstruct.version>1.6.3</mapstruct.version>
         <lombok.version>1.18.38</lombok.version>
-        <springdoc.version>3.0.2</springdoc.version>
-        <testcontainers.version>1.20.6</testcontainers.version>
+        <springdoc.version>3.0.3</springdoc.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
         <logstash.encoder.version>9.0</logstash.encoder.version>
     </properties>
 
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>org.springframework.retry</groupId>
             <artifactId>spring-retry</artifactId>
-            <version>2.0.11</version>
+            <version>2.0.12</version>
         </dependency>
 
         <dependency>
@@ -207,6 +207,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.3</version>
+                <configuration>
+                    <argLine>-XX:+EnableDynamicAgentLoading -Xshare:off</argLine>
+                </configuration>
             </plugin>
         </plugins>
     </build>

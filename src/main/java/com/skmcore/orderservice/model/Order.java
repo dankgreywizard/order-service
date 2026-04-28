@@ -9,6 +9,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -26,26 +28,48 @@ public class Order {
     private UUID id;
 
     @NotNull
-    @Column(nullable = false)
-    private String customerName;
+    @Column(name = "order_number", nullable = false, unique = true)
+    private String orderNumber;
 
     @NotNull
-    @Column(nullable = false)
+    @Column(name = "customer_id", nullable = false)
+    private String customerId;
+
+    @NotNull
+    @Column(nullable = false, length = 3)
+    private String currency;
+
+    @NotNull
+    @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal totalAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status;
 
+    @OneToMany(mappedBy = "orderId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<OrderItem> items = new ArrayList<>();
+
     @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(nullable = false)
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     public enum OrderStatus {
         PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+    }
+
+    public void addItem(OrderItem item) {
+        this.items.add(item);
+        item.setOrderId(this.id);
+    }
+
+    public void removeItem(OrderItem item) {
+        this.items.remove(item);
+        item.setOrderId(null);
     }
 }

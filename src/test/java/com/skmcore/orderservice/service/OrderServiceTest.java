@@ -1,12 +1,16 @@
 package com.skmcore.orderservice.service;
 
+import com.skmcore.orderservice.dto.OrderItemResponse;
 import com.skmcore.orderservice.dto.OrderRequest;
 import com.skmcore.orderservice.dto.OrderResponse;
 import com.skmcore.orderservice.event.OrderCreatedEvent;
 import com.skmcore.orderservice.event.OrderStatusChangedEvent;
 import com.skmcore.orderservice.exception.ResourceNotFoundException;
+import com.skmcore.orderservice.mapper.OrderItemMapper;
 import com.skmcore.orderservice.mapper.OrderMapper;
 import com.skmcore.orderservice.model.Order;
+import com.skmcore.orderservice.model.OrderItem;
+import com.skmcore.orderservice.repository.OrderItemRepository;
 import com.skmcore.orderservice.repository.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +21,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,7 +38,13 @@ class OrderServiceTest {
     private OrderRepository orderRepository;
 
     @Mock
+    private OrderItemRepository orderItemRepository;
+
+    @Mock
     private OrderMapper orderMapper;
+
+    @Mock
+    private OrderItemMapper orderItemMapper;
 
     @Mock
     private ApplicationEventPublisher eventPublisher;
@@ -48,26 +60,30 @@ class OrderServiceTest {
     @BeforeEach
     void setUp() {
         orderId = UUID.randomUUID();
-        orderRequest = new OrderRequest("John Doe", new BigDecimal("100.00"));
+        orderRequest = new OrderRequest("customer-123", "USD");
         order = Order.builder()
             .id(orderId)
-            .customerName("John Doe")
+            .orderNumber("ORD-12345")
+            .customerId("customer-123")
+            .currency("USD")
             .totalAmount(new BigDecimal("100.00"))
             .status(Order.OrderStatus.PENDING)
             .build();
-        orderResponse = new OrderResponse(orderId, "John Doe", new BigDecimal("100.00"), Order.OrderStatus.PENDING, null, null);
+        orderResponse = new OrderResponse(orderId, "ORD-12345", "customer-123", "USD", new BigDecimal("100.00"), Order.OrderStatus.PENDING, List.of(), null, null);
     }
 
     @Test
     void createOrder_ShouldReturnOrderResponse() {
         when(orderMapper.toEntity(any(OrderRequest.class))).thenReturn(order);
+        when(orderMapper.generateOrderNumber()).thenReturn("ORD-12345");
         when(orderRepository.save(any(Order.class))).thenReturn(order);
-        when(orderMapper.toResponse(any(Order.class))).thenReturn(orderResponse);
+        when(orderItemRepository.findByOrderId(order.getId())).thenReturn(List.of());
+        when(orderMapper.toResponse(any(Order.class), any(List.class))).thenReturn(orderResponse);
 
         OrderResponse result = orderService.createOrder(orderRequest);
 
         assertThat(result).isNotNull();
-        assertThat(result.customerName()).isEqualTo("John Doe");
+        assertThat(result.customerId()).isEqualTo("customer-123");
         verify(orderRepository).save(any(Order.class));
         verify(eventPublisher).publishEvent(any(OrderCreatedEvent.class));
     }
@@ -77,7 +93,8 @@ class OrderServiceTest {
         Order.OrderStatus newStatus = Order.OrderStatus.SHIPPED;
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
-        when(orderMapper.toResponse(any(Order.class))).thenReturn(orderResponse);
+        when(orderItemRepository.findByOrderId(order.getId())).thenReturn(List.of());
+        when(orderMapper.toResponse(any(Order.class), any(List.class))).thenReturn(orderResponse);
 
         orderService.updateOrderStatus(orderId, newStatus);
 
@@ -89,7 +106,8 @@ class OrderServiceTest {
     void updateOrderStatus_WhenStatusIsSame_ShouldNotPublishEvent() {
         Order.OrderStatus sameStatus = Order.OrderStatus.PENDING;
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(orderMapper.toResponse(any(Order.class))).thenReturn(orderResponse);
+        when(orderItemRepository.findByOrderId(order.getId())).thenReturn(List.of());
+        when(orderMapper.toResponse(any(Order.class), any(List.class))).thenReturn(orderResponse);
 
         orderService.updateOrderStatus(orderId, sameStatus);
 
@@ -100,7 +118,8 @@ class OrderServiceTest {
     @Test
     void getOrderById_WhenOrderExists_ShouldReturnOrderResponse() {
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(orderMapper.toResponse(order)).thenReturn(orderResponse);
+        when(orderItemRepository.findByOrderId(order.getId())).thenReturn(List.of());
+        when(orderMapper.toResponse(any(Order.class), any(List.class))).thenReturn(orderResponse);
 
         OrderResponse result = orderService.getOrderById(orderId);
 
@@ -132,5 +151,42 @@ class OrderServiceTest {
 
         assertThatThrownBy(() -> orderService.deleteOrder(orderId))
             .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void getAllOrders_ShouldReturnList() {
+        when(orderRepository.findAll()).thenReturn(List.of(order));
+        when(orderItemRepository.findByOrderId(order.getId())).thenReturn(List.of());
+        when(orderMapper.toResponse(any(Order.class), any(List.class))).thenReturn(orderResponse);
+
+        List<OrderResponse> result = orderService.getAllOrders();
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst()).isEqualTo(orderResponse);
+    }
+
+    @Test
+    void getOrderById_WithItems_ShouldReturnOrderResponseWithItems() {
+        UUID itemId = UUID.randomUUID();
+        OrderItem orderItem = OrderItem.builder()
+            .id(itemId)
+            .orderId(orderId)
+            .productId(UUID.randomUUID())
+            .productName("Test Product")
+            .quantity(2)
+            .unitPrice(new BigDecimal("50.00"))
+            .build();
+        OrderItemResponse itemResponse = new OrderItemResponse(itemId, orderItem.getProductId(),
+            orderItem.getProductName(), orderItem.getQuantity(), orderItem.getUnitPrice(), LocalDateTime.now());
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderItemRepository.findByOrderId(orderId)).thenReturn(List.of(orderItem));
+        when(orderItemMapper.toResponse(orderItem)).thenReturn(itemResponse);
+        when(orderMapper.toResponse(any(Order.class), any(List.class))).thenReturn(orderResponse);
+
+        OrderResponse result = orderService.getOrderById(orderId);
+
+        assertThat(result).isNotNull();
+        verify(orderItemRepository).findByOrderId(orderId);
     }
 }

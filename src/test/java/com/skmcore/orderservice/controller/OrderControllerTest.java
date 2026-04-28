@@ -48,8 +48,8 @@ class OrderControllerTest {
 
     @Test
     void createOrder_ShouldReturnCreated() throws Exception {
-        OrderRequest request = new OrderRequest("John Doe", new BigDecimal("100.00"));
-        OrderResponse response = new OrderResponse(UUID.randomUUID(), "John Doe", new BigDecimal("100.00"), Order.OrderStatus.PENDING, LocalDateTime.now(), LocalDateTime.now());
+        OrderRequest request = new OrderRequest("customer-123", "USD");
+        OrderResponse response = new OrderResponse(UUID.randomUUID(), "ORD-12345", "customer-123", "USD", new BigDecimal("100.00"), Order.OrderStatus.PENDING, List.of(), LocalDateTime.now(), LocalDateTime.now());
 
         when(orderService.createOrder(any(OrderRequest.class))).thenReturn(response);
 
@@ -57,39 +57,42 @@ class OrderControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.customerName").value("John Doe"))
-                .andExpect(jsonPath("$.totalAmount").value(100.00));
+                .andExpect(jsonPath("$.customerId").value("customer-123"))
+                .andExpect(jsonPath("$.currency").value("USD"))
+                .andExpect(jsonPath("$.orderNumber").value("ORD-12345"));
     }
 
     @Test
     void getOrderById_ShouldReturnOrder() throws Exception {
         UUID orderId = UUID.randomUUID();
-        OrderResponse response = new OrderResponse(orderId, "John Doe", new BigDecimal("100.00"), Order.OrderStatus.PENDING, LocalDateTime.now(), LocalDateTime.now());
+        OrderResponse response = new OrderResponse(orderId, "ORD-12345", "customer-123", "USD", new BigDecimal("100.00"), Order.OrderStatus.PENDING, List.of(), LocalDateTime.now(), LocalDateTime.now());
 
         when(orderService.getOrderById(orderId)).thenReturn(response);
 
         mockMvc.perform(get("/api/v1/orders/{id}", orderId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(orderId.toString()))
-                .andExpect(jsonPath("$.customerName").value("John Doe"));
+                .andExpect(jsonPath("$.customerId").value("customer-123"))
+                .andExpect(jsonPath("$.orderNumber").value("ORD-12345"));
     }
 
     @Test
     void getAllOrders_ShouldReturnList() throws Exception {
-        OrderResponse response = new OrderResponse(UUID.randomUUID(), "John Doe", new BigDecimal("100.00"), Order.OrderStatus.PENDING, LocalDateTime.now(), LocalDateTime.now());
+        OrderResponse response = new OrderResponse(UUID.randomUUID(), "ORD-12345", "customer-123", "USD", new BigDecimal("100.00"), Order.OrderStatus.PENDING, List.of(), LocalDateTime.now(), LocalDateTime.now());
 
         when(orderService.getAllOrders()).thenReturn(List.of(response));
 
         mockMvc.perform(get("/api/v1/orders"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].customerName").value("John Doe"));
+                .andExpect(jsonPath("$[0].customerId").value("customer-123"))
+                .andExpect(jsonPath("$[0].orderNumber").value("ORD-12345"));
     }
 
     @Test
     void updateOrderStatus_ShouldReturnUpdatedOrder() throws Exception {
         UUID orderId = UUID.randomUUID();
         Order.OrderStatus newStatus = Order.OrderStatus.SHIPPED;
-        OrderResponse response = new OrderResponse(orderId, "John Doe", new BigDecimal("100.00"), newStatus, LocalDateTime.now(), LocalDateTime.now());
+        OrderResponse response = new OrderResponse(orderId, "ORD-12345", "customer-123", "USD", new BigDecimal("100.00"), newStatus, List.of(), LocalDateTime.now(), LocalDateTime.now());
 
         when(orderService.updateOrderStatus(eq(orderId), eq(newStatus))).thenReturn(response);
 
