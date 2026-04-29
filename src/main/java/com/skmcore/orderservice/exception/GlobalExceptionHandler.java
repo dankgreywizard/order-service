@@ -1,5 +1,6 @@
 package com.skmcore.orderservice.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,18 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         log.error("Validation failed: {}", errors);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation failed", errors);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getConstraintViolations().forEach(violation -> {
+            String propertyPath = violation.getPropertyPath().toString();
+            String message = violation.getMessage();
+            errors.put(propertyPath, message);
+        });
+        log.error("Constraint violation: {}", errors);
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation failed", errors);
     }
 

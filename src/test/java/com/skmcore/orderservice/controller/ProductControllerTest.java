@@ -182,6 +182,44 @@ class ProductControllerTest {
     }
 
     @Test
+    void createProduct_WithInvalidCode_ShouldReturnBadRequest() throws Exception {
+        ProductRequest invalidRequest = new ProductRequest(
+            "PR", // too short, min 3
+            "Test Product",
+            "A test product",
+            new BigDecimal("29.99"),
+            "Electronics",
+            100,
+            true
+        );
+
+        mockMvc.perform(post("/api/v1/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.productCode").exists());
+    }
+
+    @Test
+    void createProduct_WithInvalidCharsInCode_ShouldReturnBadRequest() throws Exception {
+        ProductRequest invalidRequest = new ProductRequest(
+            "PROD 001", // space not allowed
+            "Test Product",
+            "A test product",
+            new BigDecimal("29.99"),
+            "Electronics",
+            100,
+            true
+        );
+
+        mockMvc.perform(post("/api/v1/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.productCode").exists());
+    }
+
+    @Test
     void deleteProduct_ShouldReturnNoContent() throws Exception {
         mockMvc.perform(delete("/api/v1/products/{id}", productId)
                 .contentType(MediaType.APPLICATION_JSON))

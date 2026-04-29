@@ -16,13 +16,28 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  artemis:
+    mode: embedded
+    broker-url: vm://0
+    embedded:
+      enabled: true
+      queues: order.created,order.status.changed,order.item.added,order.item.removed,product.created,product.stock.updated
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+    operations-sorter: tag
+    tags-sorter: alpha
+    show-extensions: true
   api-docs:
     path: /v3/api-docs
+    enabled: true
+  packages-to-scan: com.skmcore.orderservice
 
 management:
+  health:
+    jms:
+      enabled: false
   endpoints:
     web:
       exposure:
@@ -32,6 +47,11 @@ management:
       show-details: when-authorized
       probes:
         enabled: true
+      group:
+        readiness:
+          include: db
+        liveness:
+          include: db
   metrics:
     export:
       prometheus:
@@ -103,6 +123,10 @@ spring:
     activate:
       on-profile: staging
 
+  security:
+    user:
+      name: ${SPRING_SECURITY_USER_NAME:user}
+      password: ${SPRING_SECURITY_USER_PASSWORD:password}
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:orderdb}
     driver-class-name: org.postgresql.Driver
@@ -118,12 +142,20 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
 
-logging:
-  level:
-    root: INFO
+  artemis:
+    mode: native
+    broker-url: ${JMS_BROKER_URL:tcp://localhost:61616}
+    user: ${JMS_USER:admin}
+    password: ${JMS_PASSWORD:admin}
+    embedded:
+      enabled: false
+
+  logging:
+    level:
+      root: INFO
     com.skmcore.orderservice: INFO
     org.springframework.web: INFO
     org.springframework.security: INFO
@@ -136,6 +168,10 @@ spring:
     activate:
       on-profile: prod
 
+  security:
+    user:
+      name: ${SPRING_SECURITY_USER_NAME:user}
+      password: ${SPRING_SECURITY_USER_PASSWORD:password}
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:orderdb}
     driver-class-name: org.postgresql.Driver
@@ -151,8 +187,16 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
+
+  artemis:
+    mode: native
+    broker-url: ${JMS_BROKER_URL:tcp://localhost:61616}
+    user: ${JMS_USER:admin}
+    password: ${JMS_PASSWORD:admin}
+    embedded:
+      enabled: false
 
   liquibase:
     enabled: true

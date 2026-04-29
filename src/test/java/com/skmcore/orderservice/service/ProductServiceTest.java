@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,6 +33,9 @@ class ProductServiceTest {
 
     @Mock
     private ProductMapper productMapper;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private ProductService productService;
@@ -184,6 +188,7 @@ class ProductServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.productCode()).isEqualTo("PROD-001");
         verify(productRepository).save(any(Product.class));
+        verify(eventPublisher).publishEvent(any(com.skmcore.orderservice.event.ProductCreatedEvent.class));
     }
 
     @Test
@@ -206,6 +211,7 @@ class ProductServiceTest {
 
         assertThat(result).isNotNull();
         verify(productRepository).save(product);
+        verify(eventPublisher).publishEvent(any(com.skmcore.orderservice.event.ProductStockUpdatedEvent.class));
         assertThat(product.getName()).isEqualTo("Updated Product");
         assertThat(product.getDescription()).isEqualTo("Updated description");
         assertThat(product.getPrice()).isEqualByComparingTo(new BigDecimal("39.99"));

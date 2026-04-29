@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -42,6 +43,9 @@ class OrderItemServiceTest {
 
     @Mock
     private OrderItemMapper orderItemMapper;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private OrderItemService orderItemService;
@@ -130,6 +134,7 @@ class OrderItemServiceTest {
         assertThat(result.productId()).isEqualTo(productId);
         verify(orderItemRepository).save(any(OrderItem.class));
         verify(productRepository).save(product);
+        verify(eventPublisher).publishEvent(any(com.skmcore.orderservice.event.OrderItemAddedEvent.class));
         assertThat(product.getStockQuantity()).isEqualTo(98);
     }
 
@@ -186,6 +191,8 @@ class OrderItemServiceTest {
 
         verify(orderItemRepository).deleteById(itemId);
         verify(productRepository).save(product);
+        verify(eventPublisher).publishEvent(any(com.skmcore.orderservice.event.OrderItemRemovedEvent.class));
+        verify(eventPublisher).publishEvent(any(com.skmcore.orderservice.event.ProductStockUpdatedEvent.class));
         assertThat(product.getStockQuantity()).isEqualTo(102);
     }
 

@@ -63,6 +63,28 @@ class OrderControllerTest {
     }
 
     @Test
+    void createOrder_WithInvalidCustomerId_ShouldReturnBadRequest() throws Exception {
+        OrderRequest request = new OrderRequest("C", "USD"); // too short
+
+        mockMvc.perform(post("/api/v1/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.customerId").exists());
+    }
+
+    @Test
+    void createOrder_WithInvalidCurrency_ShouldReturnBadRequest() throws Exception {
+        OrderRequest request = new OrderRequest("customer-123", "US"); // too short, must be 3
+
+        mockMvc.perform(post("/api/v1/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.currency").exists());
+    }
+
+    @Test
     void getOrderById_ShouldReturnOrder() throws Exception {
         UUID orderId = UUID.randomUUID();
         OrderResponse response = new OrderResponse(orderId, "ORD-12345", "customer-123", "USD", new BigDecimal("100.00"), Order.OrderStatus.PENDING, List.of(), LocalDateTime.now(), LocalDateTime.now());

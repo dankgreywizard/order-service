@@ -11,6 +11,7 @@ The project is optimized for Java 25. Note that `maven-surefire-plugin` is confi
 - **Java**: 25
 - **Spring Boot**: 4.0.5
 - **Database**: PostgreSQL 18 (H2 for development)
+- **Messaging**: JMS (ActiveMQ Artemis)
 - **Migrations**: Liquibase
 - **Build Tool**: Maven
 - **Container**: Docker with multi-stage builds
@@ -25,6 +26,7 @@ The project is optimized for Java 25. Note that `maven-surefire-plugin` is confi
 - Security with Spring Security
 - Database migrations with Liquibase
 - DTO mapping with MapStruct
+- Event-driven architecture with JMS (ActiveMQ Artemis)
 - Testcontainers for integration testing
 
 ## Project Structure
@@ -39,6 +41,7 @@ order-service/
 │   │   │   ├── dto/             # Request/Response DTOs
 │   │   │   ├── event/           # Event classes
 │   │   │   ├── exception/       # Custom exceptions
+│   │   │   ├── jms/             # JMS message models and services
 │   │   │   ├── mapper/          # MapStruct mappers
 │   │   │   ├── model/           # JPA entities
 │   │   │   ├── repository/      # Spring Data repositories
@@ -181,6 +184,20 @@ java -jar -Dspring.profiles.active=staging target/order-service-*.jar
 - JSON structured logging (Logstash)
 - Liquibase migrations enabled
 
+### Local Development with Docker
+
+The project uses Docker Compose for local development. Environment variables are managed using a `.env` file.
+
+1.  Copy the example environment file:
+    ```bash
+    cp .env.example .env
+    ```
+2.  (Optional) Edit `.env` to customize your local setup.
+3.  Start the services:
+    ```bash
+    docker compose up -d
+    ```
+
 ## Environment Variables
 
 | Variable | Description | Default |
@@ -191,6 +208,11 @@ java -jar -Dspring.profiles.active=staging target/order-service-*.jar
 | `DB_USER` | Database username | `postgres` |
 | `DB_PASSWORD` | Database password | `password` |
 | `JAVA_OPTS` | JVM options | `-XX:+UseContainerSupport` |
+| `JMS_BROKER_URL` | JMS Broker URL | `vm://0` (embedded) |
+| `JMS_USER` | JMS Username | `admin` |
+| `JMS_PASSWORD` | JMS Password | `admin` |
+| `SPRING_SECURITY_USER_NAME` | Security username | `user` |
+| `SPRING_SECURITY_USER_PASSWORD` | Security password | `password` |
 
 ## API Documentation
 
@@ -241,7 +263,7 @@ docker run -p 8080:8080 \
 
 ### Run with Docker Compose
 
-The easiest way to run the full stack (application + PostgreSQL) is using Docker Compose:
+The easiest way to run the full stack (application + PostgreSQL + ActiveMQ Artemis) is using Docker Compose:
 
 ```bash
 # Build and start services
@@ -298,6 +320,28 @@ mvn test -Dspring.profiles.active=test
 
 ## Architecture
 
+### Event-Driven Architecture
+
+The service uses an event-driven approach for internal and external communication:
+1. **Internal Events**: Uses Spring `ApplicationEventPublisher` to decouple business logic from side effects.
+2. **External Messaging**: Uses JMS (ActiveMQ Artemis) to publish events to other microservices. `JmsProducerService` handles the transmission of messages to configured queues.
+
+#### JMS Queues & Events
+
+| Queue Name | Event Description |
+|------------|-------------------|
+| `order.created` | Published when a new order is successfully created. |
+| `order.status.changed` | Published when an order status is updated (e.g., to SHIPPED). |
+| `order.item.added` | Published when an item is added to an existing order. |
+| `order.item.removed` | Published when an item is removed from an order. |
+| `product.created` | Published when a new product is added to the catalog. |
+| `product.stock.updated` | Published when product stock is adjusted (e.g., due to an order). |
+
+#### Broker Modes
+
+- **Embedded Mode**: Default for `dev` and testing. Starts an in-memory ActiveMQ Artemis broker (`vm://0`).
+- **Native Mode**: Used in `staging` and `prod` profiles. Connects to an external broker instance via TCP.
+
 ### Layered Architecture
 
 ```
@@ -318,6 +362,8 @@ Controller Layer
 - **Constructor Injection**: Used everywhere (never field injection)
 - **Records**: Used for DTOs where possible
 - **ResponseEntity**: Returned from controllers (not raw objects)
+- **Input Sanitization**: All REST endpoints use strict validation and sanitization for incoming data.
+- **Security**: HTTP Basic Authentication is enabled for protected endpoints (e.g., Product creation/deletion).
 - **AssertJ**: Used for assertions in tests
 
 ## Contributing
