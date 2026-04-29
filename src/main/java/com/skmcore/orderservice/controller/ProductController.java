@@ -6,7 +6,11 @@ import com.skmcore.orderservice.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -44,19 +48,22 @@ public class ProductController {
 
     @GetMapping("/code/{productCode}")
     @Operation(summary = "Get product by code", description = "Returns a specific product by its product code")
-    public ResponseEntity<ProductResponse> getProductByCode(@PathVariable String productCode) {
+    public ResponseEntity<ProductResponse> getProductByCode(
+            @PathVariable @NotBlank @Size(min = 3, max = 50) @Pattern(regexp = "^[A-Za-z0-9_-]+$") String productCode) {
         return ResponseEntity.ok(productService.getProductByCode(productCode));
     }
 
     @GetMapping("/category/{category}")
     @Operation(summary = "Get products by category", description = "Returns all products in a specific category")
-    public ResponseEntity<List<ProductResponse>> getProductsByCategory(@PathVariable String category) {
+    public ResponseEntity<List<ProductResponse>> getProductsByCategory(
+            @PathVariable @NotBlank @Size(max = 50) String category) {
         return ResponseEntity.ok(productService.getProductsByCategory(category));
     }
 
     @GetMapping("/category/{category}/available")
     @Operation(summary = "Get available products by category", description = "Returns available products in a specific category")
-    public ResponseEntity<List<ProductResponse>> getAvailableProductsByCategory(@PathVariable String category) {
+    public ResponseEntity<List<ProductResponse>> getAvailableProductsByCategory(
+            @PathVariable @NotBlank @Size(max = 50) String category) {
         return ResponseEntity.ok(productService.getAvailableProductsByCategory(category));
     }
 

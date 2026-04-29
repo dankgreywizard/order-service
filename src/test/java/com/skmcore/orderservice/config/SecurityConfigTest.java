@@ -58,8 +58,8 @@ class SecurityConfigTest {
     }
 
     @Test
-    void arbitraryPath_ShouldBeBlocked() throws Exception {
+    void arbitraryPath_ShouldBeUnauthorized() throws Exception {
         mockMvc.perform(get("/api/v1/unknown"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 }

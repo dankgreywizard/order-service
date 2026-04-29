@@ -19,6 +19,8 @@
 - All business logic lives in the service layer
 - Use constructor injection everywhere, never field injection
 - Every public service method must be covered by a unit test
+- Event-driven communication using Spring ApplicationEvents and JMS (ActiveMQ Artemis)
+- Use JmsProducerService for sending messages to external queues
 
 ## Coding Conventions
 - Use UUID for all entity primary keys
@@ -27,6 +29,7 @@
 - DTOs are records where possible, otherwise use Lombok @Builder
 - Return ResponseEntity from controllers, not raw objects
 - Use AssertJ assertions in tests, not JUnit assertEquals
+- Sanitize and validate all input data in DTOs and Controller parameters
 
 ## Error Handling
 - Throw custom exceptions (EntityNotFoundException, etc.)

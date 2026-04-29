@@ -2,12 +2,15 @@ package com.skmcore.orderservice.service;
 
 import com.skmcore.orderservice.dto.ProductRequest;
 import com.skmcore.orderservice.dto.ProductResponse;
+import com.skmcore.orderservice.event.ProductCreatedEvent;
+import com.skmcore.orderservice.event.ProductStockUpdatedEvent;
 import com.skmcore.orderservice.exception.ResourceNotFoundException;
 import com.skmcore.orderservice.mapper.ProductMapper;
 import com.skmcore.orderservice.model.Product;
 import com.skmcore.orderservice.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +26,14 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public ProductService(ProductRepository productRepository, ProductMapper productMapper) {
+    public ProductService(ProductRepository productRepository,
+                          ProductMapper productMapper,
+                          ApplicationEventPublisher eventPublisher) {
         this.productRepository = productRepository;
         this.productMapper = productMapper;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -75,12 +82,19 @@ public class ProductService {
         Product product = productMapper.toEntity(request);
         Product saved = productRepository.save(product);
         logger.info("Created product with id: {}", saved.getId());
+
+        eventPublisher.publishEvent(new ProductCreatedEvent(
+                saved.getId(), saved.getProductCode(), saved.getName()
+        ));
+
         return productMapper.toResponse(saved);
     }
 
     public ProductResponse updateProduct(UUID id, ProductRequest request) {
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+
+        int previousStock = existing.getStockQuantity();
 
         existing.setProductCode(request.productCode());
         existing.setName(request.name());
@@ -95,6 +109,16 @@ public class ProductService {
 
         Product updated = productRepository.save(existing);
         logger.info("Updated product with id: {}", updated.getId());
+
+        int stockChange = request.stockQuantity() - previousStock;
+        if (stockChange != 0) {
+            eventPublisher.publishEvent(new ProductStockUpdatedEvent(
+                    updated.getId(), updated.getProductCode(),
+                    previousStock, updated.getStockQuantity(),
+                    stockChange, "Product update"
+            ));
+        }
+
         return productMapper.toResponse(updated);
     }
 

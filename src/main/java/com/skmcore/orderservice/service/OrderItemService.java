@@ -2,6 +2,9 @@ package com.skmcore.orderservice.service;
 
 import com.skmcore.orderservice.dto.AddItemRequest;
 import com.skmcore.orderservice.dto.OrderItemResponse;
+import com.skmcore.orderservice.event.OrderItemAddedEvent;
+import com.skmcore.orderservice.event.OrderItemRemovedEvent;
+import com.skmcore.orderservice.event.ProductStockUpdatedEvent;
 import com.skmcore.orderservice.exception.ResourceNotFoundException;
 import com.skmcore.orderservice.mapper.OrderItemMapper;
 import com.skmcore.orderservice.model.Order;
@@ -12,6 +15,7 @@ import com.skmcore.orderservice.repository.OrderRepository;
 import com.skmcore.orderservice.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,15 +34,18 @@ public class OrderItemService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final OrderItemMapper orderItemMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     public OrderItemService(OrderItemRepository orderItemRepository,
                             OrderRepository orderRepository,
                             ProductRepository productRepository,
-                            OrderItemMapper orderItemMapper) {
+                            OrderItemMapper orderItemMapper,
+                            ApplicationEventPublisher eventPublisher) {
         this.orderItemRepository = orderItemRepository;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.orderItemMapper = orderItemMapper;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -75,6 +82,7 @@ public class OrderItemService {
 
         OrderItem saved = orderItemRepository.save(orderItem);
 
+        int previousStock = product.getStockQuantity();
         product.setStockQuantity(product.getStockQuantity() - request.quantity());
         productRepository.save(product);
 
@@ -82,6 +90,11 @@ public class OrderItemService {
 
         logger.info("Added item to order: orderId={}, productId={}, quantity={}",
                 orderId, request.productId(), request.quantity());
+
+        eventPublisher.publishEvent(new OrderItemAddedEvent(
+                orderId, saved.getId(), product.getId(),
+                product.getName(), request.quantity(), product.getPrice()
+        ));
 
         return orderItemMapper.toResponse(saved);
     }
@@ -99,11 +112,14 @@ public class OrderItemService {
 
         UUID productId = orderItemToDelete.getProductId();
         Integer quantity = orderItemToDelete.getQuantity();
+        BigDecimal unitPrice = orderItemToDelete.getUnitPrice();
+        String productName = orderItemToDelete.getProductName();
 
         orderItemRepository.deleteById(itemId);
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+        int previousStock = product.getStockQuantity();
         product.setStockQuantity(product.getStockQuantity() + quantity);
         productRepository.save(product);
 
@@ -113,6 +129,15 @@ public class OrderItemService {
         updateOrderTotal(order);
 
         logger.info("Removed item from order: orderId={}, itemId={}", orderId, itemId);
+
+        eventPublisher.publishEvent(new OrderItemRemovedEvent(
+                orderId, itemId, productId, productName, quantity, unitPrice, "Customer request"
+        ));
+
+        eventPublisher.publishEvent(new ProductStockUpdatedEvent(
+                productId, product.getProductCode(), previousStock,
+                product.getStockQuantity(), quantity, "Item removed from order"
+        ));
     }
 
     private void updateOrderTotal(Order order) {
